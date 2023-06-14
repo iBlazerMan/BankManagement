@@ -5,100 +5,11 @@
 #include <vector>
 #include <limits>
 #include <iomanip>
+#include "Account.h"
 using namespace std;
 
-class Account {
-private:
-    string name;
-    double balance;
-    int card_number;
-    string transaction_type[20];
-    double transaction_amount[20];
 
-public:
-    // constructor
-    Account(const string& inp_name, double inp_balance, int inp_card_number) {
-        name = inp_name;
-        balance = inp_balance;
-        card_number = inp_card_number;
-        for (int i = 0; i < 20; ++i) {
-            transaction_type[i] = "";
-            transaction_amount[i] = 0;
-        }
-    }
-
-    // returns the account's current balance
-    double get_balance() {
-        return balance;
-    }
-
-    // modify the current account's balance
-    void change_balance(double amount) {
-        balance = balance + amount;
-    }
-
-    // returns the account's name
-    string get_name() {
-        return name;
-    }
-
-    // returns card number
-    int get_number() {
-        return card_number;
-    }
-
-    // add a new transaction with type/amount
-    void add_transaction(string type, double amount) {
-        for (int i = 18; i >= 0; --i) {
-            if (transaction_amount[i] != 0) {
-                transaction_amount[i + 1] = transaction_amount[i]; 
-                transaction_type[i + 1] = transaction_type[i];
-            }
-        }
-        transaction_amount[0] = amount;
-        transaction_type[0] = type;
-    }
-
-    void clear_transaction() {
-        for (int i = 0; i < 20; ++i) {
-            transaction_type[i] = "";
-            transaction_amount[i] = 0;
-        }
-    }
-
-    // prints the transactions recorded including the type and amount to the given output stream
-    void printTransaction(ostream& ostr) {
-        if (transaction_amount[0] == 0) {
-            ostr << "There are no transaction on record." << "\n" << endl;
-            return;
-        }
-        int i = 0;
-        ostr << "Most recent transactions:" << endl;
-        while (transaction_amount[i] != 0) { 
-            ostr << "Transaction #" << (i + 1) << endl;
-            ostr << "Transaction type: " << transaction_type[i] << endl;
-            if (transaction_amount[i] > 0) {
-                ostr << "Balance change: +" << transaction_amount[i];
-            } else {
-                ostr << "Balance change: " << transaction_amount[i];
-            }
-            ostr << "\n" << endl;
-            i++;
-        }
-    }
-
-    // generates a .txt file that contains all info of the account
-    void generateAccountSummary(const string FileName) {
-        string generatedFileName = FileName + ".txt";
-        ofstream summary(generatedFileName);
-        summary << "Name: " << get_name() << endl;
-        summary << "Card Number: " << get_number() << endl;
-        summary << "Current Balance: " << get_balance() << "\n" << endl;
-        printTransaction(summary);
-        summary.close();
-    }
-};
-
+// printAccountList(listofAccount) outputs all accounts stored in listofAccount
 void printAccountList(vector<Account>& listofAccount) {
     int totalAccount = listofAccount.size();
     if (totalAccount == 0) {
@@ -111,6 +22,9 @@ void printAccountList(vector<Account>& listofAccount) {
     }
 }
 
+
+// AccountSelector(listofAccount, message) reads input until a valid account is read
+// and returns the position of the account in listofAccount
 int AccountSelector(vector<Account>& listofAccount, const string& message) {
     string aName;
     int totalAccount = listofAccount.size();
@@ -135,6 +49,8 @@ int AccountSelector(vector<Account>& listofAccount, const string& message) {
 }
 
 
+// CreateAccount(listofAccount) reads the name, account number and balance and 
+// adds the account to listofAccount
 void CreateAccount(vector<Account>& listofAccount) {
     string aName;
     double aBalance;
@@ -209,6 +125,8 @@ void CreateAccount(vector<Account>& listofAccount) {
 }
 
 
+// AddTransaction (listofAccount) reads the type and amount of the transaction then make and document 
+// the transaction if the account has sufficient balance
 void AddTransaction (vector<Account>& listofAccount) {
     string aName;
     int totalAccount = listofAccount.size();
@@ -258,6 +176,9 @@ void AddTransaction (vector<Account>& listofAccount) {
     cout << "Transation successfully made! Current account balance: " << listofAccount[AccountIndex].get_balance() << endl << endl;
 }
 
+
+// AccountSummary(listofAccount) outputs the account's information 
+// (name, account number, balance, transaction history)
 void AccountSummary(vector<Account>& listofAccount) {
     int AccountIndex = AccountSelector(listofAccount, 
     "Please enter the name of the account that you'd like to print:");
@@ -265,6 +186,9 @@ void AccountSummary(vector<Account>& listofAccount) {
     listofAccount[AccountIndex].printTransaction(cout);
 }
 
+
+// PrintAccountSummary(listofAccount) outputs a .txt file containing the account's information
+// (name, account number, balance, transaction history)
 void PrintAccountSummary(vector<Account>& listofAccount) {
     string fileName;
     int AccountIndex = AccountSelector(listofAccount, 
@@ -277,9 +201,11 @@ void PrintAccountSummary(vector<Account>& listofAccount) {
 }
 
 
+// ClearTransaction (listofAccount) empties the transaction history saved on the account;
+// Does not affect the current balance of the account modified by the transactions made
 void ClearTransaction (vector<Account>& listofAccount) {
     int AccountIndex = AccountSelector(listofAccount, 
-    "Please enter the name of the account that you'd like to clear the transaction for");
+    "Please enter the name of the account that you'd like to clear the transaction for:");
     listofAccount[AccountIndex].clear_transaction();
     cout << listofAccount[AccountIndex].get_name() << "'s transaction history has been cleared!" << "\n" << endl;
 }
