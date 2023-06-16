@@ -38,11 +38,9 @@ public:
     // deletes all transaction records of the account
     void clear_transaction();
 
-    // prints the transactions recorded including the type and amount to the given output stream
-    void printTransaction(ostream& ostr);
-
-    // generates a .txt file that contains all info of the account
-    void generateAccountSummary(const string FileName);
+    // prints the account information and transactions recorded 
+    // including the type and amount to the given output stream
+    void print_summary(ostream& ostr);
 };
 
 #endif

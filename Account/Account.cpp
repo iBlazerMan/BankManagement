@@ -75,13 +75,16 @@ void Account::clear_transaction() {
     }
 }
 
-void Account::printTransaction(ostream& ostr) {
+void Account::print_summary(ostream& ostr) {
+    ostr << "Name: " << get_name() << endl;
+    ostr << "Card Number: " << get_number() << endl;
+    ostr << "Current Balance: " << get_balance() << "\n" << endl;
     if (impl->transaction_amount[0] == 0) {
         ostr << "There are no transaction on record." << "\n" << endl;
         return;
     }
     int i = 0;
-    ostr << "Most recent transactions:" << endl;
+    ostr << "Most recent transactions (#1 being most recent):" << endl;
     while (impl->transaction_amount[i] != 0) { 
         ostr << "Transaction #" << (i + 1) << endl;
         ostr << "Transaction type: " << *impl->transaction_type[i] << endl;
@@ -93,14 +96,4 @@ void Account::printTransaction(ostream& ostr) {
         ostr << "\n" << endl;
         i++;
     }
-}
-
-void Account::generateAccountSummary(const string FileName) {
-    string generatedFileName = FileName + ".txt";
-    ofstream summary(generatedFileName);
-    summary << "Name: " << get_name() << endl;
-    summary << "Card Number: " << get_number() << endl;
-    summary << "Current Balance: " << get_balance() << "\n" << endl;
-    printTransaction(summary);
-    summary.close();
 }

@@ -96,7 +96,7 @@ void CreateAccount(vector<Account>& listofAccount) {
                 break;
             }
             if (listofAccount[i].get_number() == aNumber) {
-                cout << aNumber << " is already being used.\n";
+                cout << aNumber << " is already taken by another account.\n";
                 break;
             }
         }
@@ -133,7 +133,7 @@ void AddTransaction (vector<Account>& listofAccount) {
     double amount;
     string type;
     int AccountIndex = AccountSelector(listofAccount, 
-    "Please enter the name of the that you'd like to make a transaction for:");
+    "Please enter the name of the account that you'd like to make a transaction for:");
     cout << "Making transaction for: " << listofAccount[AccountIndex].get_name() << "." << endl;
     cout << "Be aware that the system only saves the most recent 20 transactions! "
             "The oldest transaction record will be replaced if there are already 20 transactions saved." << endl;
@@ -177,37 +177,100 @@ void AddTransaction (vector<Account>& listofAccount) {
 }
 
 
-// AccountSummary(listofAccount) outputs the account's information 
+// printAccountSummary(listofAccount) outputs the account's information 
 // (name, account number, balance, transaction history)
-void AccountSummary(vector<Account>& listofAccount) {
+void printAccountSummary(vector<Account>& listofAccount) {
     int AccountIndex = AccountSelector(listofAccount, 
     "Please enter the name of the account that you'd like to print:");
     cout << "\n";
-    listofAccount[AccountIndex].printTransaction(cout);
+    listofAccount[AccountIndex].print_summary(cout);
 }
 
 
-// PrintAccountSummary(listofAccount) outputs a .txt file containing the account's information
+// generateAccountSummary(listofAccount) outputs a .txt file containing the account's information
 // (name, account number, balance, transaction history)
-void PrintAccountSummary(vector<Account>& listofAccount) {
+void generateAccountSummary(vector<Account>& listofAccount) {
     string fileName;
     int AccountIndex = AccountSelector(listofAccount, 
     "Please enter the name of the account that you'd like to print:");
     cout << "Generating account summary for: " << listofAccount[AccountIndex].get_name() << ".\n\n";
     cout << "Please enter a name for the summary file:" << endl;
     getline(cin, fileName);
-    listofAccount[AccountIndex].generateAccountSummary(fileName);
-    cout << "The account summary has been generated as " << fileName << ".txt!" << "\n" << endl;    
+    
+    string generatedFileName = fileName + ".txt";
+    ofstream summary(generatedFileName);
+    listofAccount[AccountIndex].print_summary(summary);
+    summary.close();
+
+    cout << "The account summary has been generated as " << fileName << ".txt!\n" << endl;    
 }
 
 
-// ClearTransaction (listofAccount) empties the transaction history saved on the account;
+// ClearTransaction(listofAccount) empties the transaction history saved on the account;
 // Does not affect the current balance of the account modified by the transactions made
 void ClearTransaction (vector<Account>& listofAccount) {
     int AccountIndex = AccountSelector(listofAccount, 
     "Please enter the name of the account that you'd like to clear the transaction for:");
     listofAccount[AccountIndex].clear_transaction();
-    cout << listofAccount[AccountIndex].get_name() << "'s transaction history has been cleared!" << "\n" << endl;
+    cout << listofAccount[AccountIndex].get_name() << "'s transaction history has been cleared!\n" << endl;
+}
+
+
+// DeleteAccount(listofAccount) removes the account from listofAccount
+void DeleteAccount (vector<Account>& listofAccount) {
+    int AccountIndex = AccountSelector(listofAccount, 
+    "Please enter the name of the account that you'd like to delete:");
+    listofAccount.erase(listofAccount.begin() + AccountIndex);
+    cout << "\nThe account has been deleted.\n" << endl;
+}
+
+
+// printOverview(listofAccount, ostr) outputs the name, number and balance of every account on record
+// to the given output stream
+void printOverview(vector<Account>& listofAccount, ostream& ostr) {
+    int totalAccount = listofAccount.size();
+    ostr << "Account Overview\n" << endl;
+    for (int i = 0; i < totalAccount; ++i) {
+        ostr << "Account " << (i + 1) << endl;
+        ostr << "   Name: " << listofAccount[i].get_name() << endl;
+        ostr << "   Number: " << listofAccount[i].get_number() << endl;
+        ostr << "   Balance: " << listofAccount[i].get_balance() << "\n" << endl; 
+    }
+}
+
+
+// genereateOverview(listofAccount) outputs a .txt file that contains the name, number and balance of
+// every account on record
+void generateOverview(vector<Account>& listofAccount) {
+    string fileName;
+    cout << "\nPlease enter a name for the accounts overview file:" << endl;
+    getline(cin, fileName);
+
+    string generatedFileName = fileName + ".txt";
+    ofstream summary(generatedFileName);
+    printOverview(listofAccount, summary);
+    summary.close();
+
+    cout << "The accounts overview has been generated as " << fileName << ".txt!\n" << endl; 
+}
+
+
+// Confirmation(message) prompts the user to confirm/cancel their command and
+// returns a bool based on the user input
+bool Confirmation(const string& message) {
+    string confirmation;
+    cout << "\n" << message << endl;
+    while (1) {
+        cout << "Type \"yes\" or \"y\" to confirm, \"no\" or \"n\" otherwise." << endl;
+        getline(cin, confirmation);
+        if (confirmation == "yes" || confirmation == "y") {
+            return true;
+        } else if (confirmation == "no" || confirmation == "n") {
+            return false;
+        } else {
+            cout << "Invalid input. ";
+        }
+    }
 }
 
 
@@ -225,55 +288,57 @@ int main() {
         if (input == "create") {
             CreateAccount(listofAccount);
         } 
-        
-        else if (input == "print account summary") {
-            if (listofAccount.size() == 0) {
-                cout << "There are no account on record. Please create an account first." << "\n" << endl;
-            } else {
-                PrintAccountSummary(listofAccount);
-            }
-        } 
 
-        else if (input == "account summary") {
-            if (listofAccount.size() == 0) {
-                cout << "There are no account on record. Please create an account first." << "\n" << endl;
-            } else {
-                AccountSummary(listofAccount);
-            }
+        else if (input == "account summary" || input == "transaction" ||
+                 input == "delete" || input == "generate account summary" ||
+                 input == "clear transaction" || input == "account list" ||
+                 input == "overview" || input == "generate overview") {
+                    if (listofAccount.size() == 0) {
+                        cout << "There are no account on record. Please create an account first." << "\n" << endl;
+                    } else {
+                        if (input == "account summary") {
+                            printAccountSummary(listofAccount);
+                        } else if (input == "generate account summary") {
+                            generateAccountSummary(listofAccount);
+                        } else if (input == "transaction") {
+                            AddTransaction(listofAccount);
+                        } else if (input == "delete") {
+                            if (Confirmation ("Are you sure? Deleted accounts are not recoverable!")) {
+                                DeleteAccount(listofAccount);
+                            }
+                        } else if (input == "clear transaction") {
+                            if (Confirmation("Are you sure? Cleared account transactions are not recoverable!")) {
+                                ClearTransaction(listofAccount);
+                            }
+                        } else if (input == "account list") {
+                            printAccountList(listofAccount);
+                            cout << endl;
+                        } else if (input == "overview") {
+                            cout << endl;
+                            printOverview(listofAccount, cout);
+                        } else if (input == "generate overview") {
+                            generateOverview(listofAccount);
+                        }
+                    }
         }
 
-        else if (input == "transaction") {
-            if (listofAccount.size() == 0) {
-                cout << "There are no account to add transaction to. Please create an account first." << "\n" << endl;
-            } else {
-                AddTransaction(listofAccount);
-            }
-        }
-
-        /*
-        else if (input == "delete") {
-
-        }
-        */
-
-        else if (input == "clear transaction") {
-            if (listofAccount.size() == 0) {
-                cout << "There are no account to add transaction to. Please create an account first." << "\n" << endl;
-            }
-            string confirmation;
-            cout << "\n" << "Are you sure? Cleared account transactions are not recoverable!\n";
-            while (1) {
-                cout << "Type \"yes\" or \"y\" to confirm, \"no\" or \"n\" otherwise." << endl;
-                getline(cin, confirmation);
-                if (confirmation == "yes" || confirmation == "y") {
-                    ClearTransaction(listofAccount);
-                    break;
-                } else if (confirmation == "no" || confirmation == "n") {
-                    break;
-                } else {
-                    cout << "Invalid input. ";
-                }
-            }
+        else if (input == "help") {
+            cout << "\nHere's a list of commands that the current version supports:\n\n"
+                    "create: creates a new account\n"
+                    "account list: prints out a list of account names on record\n"
+                    "transaction: adds a transaction to an account and changes the account's balance accordingly\n"
+                    "account summary: prints the selected account's name, number, balance and transaction history to the console\n"
+                    "generate account summary: same as account summary, but stores the output in a .txt file\n"
+                    "overview: prints the account name, number and balance of every account on record to the console\n"
+                    "generate overview: same as overview, but stores the output in a .txt file\n"
+                    "clear transaction: clear the transaction history of an existing account\n"
+                    "delete: deletes an existing account\n"                    
+                    "q or quit: exits the program\n" << endl;
+            
+            cout << "Note that one user can hold at most one account at a time,"
+                    "and no two accounts can have the same account number\n"
+                    "In order to use any command that is not create or q/quit," 
+                    "there must be at least one account on record\n" << endl;
         }
         
         else if (input == "") {
